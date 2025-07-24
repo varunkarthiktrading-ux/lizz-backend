@@ -4,7 +4,8 @@
   "description": "Backend service for Lizz AI - Comprehensive AI Assistant",
   "main": "index.js",
   "scripts": {
-    "start": "node index.js"
+    "start": "node index.js",
+    "dev": "nodemon index.js"
   },
   "keywords": [
     "ai",
