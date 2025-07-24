@@ -20,20 +20,20 @@ app.get('/', (req, res) => {
 
 // Chat endpoint
 app.post('/api/chat', async (req, res) => {
+  const { message, mode } = req.body;
+  
+  if (!message) {
+    return res.status(400).json({ error: 'Message is required' });
+  }
+
   try {
-    const { message, mode } = req.body;
-    
-    if (!message) {
-      return res.status(400).json({ error: 'Message is required' });
-    }
-    
     const OpenAI = require('openai');
     const openai = new OpenAI({
       apiKey: process.env.OPENAI_API_KEY
     });
-    
+
     let responseText = '';
-    
+
     if (mode === 'websearch') {
       // Simulate web search results
       const searchResults = `[Web Search Mode] Results for "${message}":\n\n` +
@@ -42,7 +42,7 @@ app.post('/api/chat', async (req, res) => {
         `2. Practical applications of ${message}\n` +
         `3. Recent research on ${message}\n` +
         `4. Community discussions about ${message}\n\n`;
-      
+
       // Get AI response based on search results
       const completion = await openai.chat.completions.create({
         model: "gpt-3.5-turbo",
@@ -59,7 +59,7 @@ app.post('/api/chat', async (req, res) => {
         temperature: 0.7,
         max_tokens: 800
       });
-      
+
       responseText = searchResults + completion.choices[0].message.content;
     } else if (mode === 'deepthink') {
       // Deep thinking mode
@@ -78,7 +78,7 @@ app.post('/api/chat', async (req, res) => {
         temperature: 0.8,
         max_tokens: 1200
       });
-      
+
       responseText = `[DeepThink Mode] Comprehensive Analysis:\n\n` + 
                      completion.choices[0].message.content;
     } else {
@@ -98,10 +98,10 @@ app.post('/api/chat', async (req, res) => {
         temperature: 0.7,
         max_tokens: 1000
       });
-      
+
       responseText = completion.choices[0].message.content;
     }
-    
+
     res.json({ response: responseText });
   } catch (error) {
     console.error('OpenAI API Error:', error);
