@@ -1,4 +1,3 @@
-// index.js
 const express = require('express');
 const cors = require('cors');
 require('dotenv').config();
@@ -19,7 +18,7 @@ app.get('/', (req, res) => {
   });
 });
 
-// Chat endpoint - SECURE implementation with real OpenAI API
+// Chat endpoint
 app.post('/api/chat', async (req, res) => {
   try {
     const { message, mode } = req.body;
@@ -28,19 +27,15 @@ app.post('/api/chat', async (req, res) => {
       return res.status(400).json({ error: 'Message is required' });
     }
     
-    // Import OpenAI library only when needed
     const OpenAI = require('openai');
-    
-    // Initialize OpenAI with API key from environment variables
     const openai = new OpenAI({
-      apiKey: process.env.OPENAI_API_KEY // Securely loaded from environment
+      apiKey: process.env.OPENAI_API_KEY
     });
     
     let responseText = '';
     
     if (mode === 'websearch') {
-      // For web search mode, we'll simulate search results
-      // In a real implementation, you would call Google Search API here
+      // Simulate web search results
       const searchResults = `[Web Search Mode] Results for "${message}":\n\n` +
         `🔍 Found 4 relevant results:\n` +
         `1. Official definition of ${message}\n` +
@@ -67,9 +62,9 @@ app.post('/api/chat', async (req, res) => {
       
       responseText = searchResults + completion.choices[0].message.content;
     } else if (mode === 'deepthink') {
-      // Deep thinking mode - enhanced reasoning
+      // Deep thinking mode
       const completion = await openai.chat.completions.create({
-        model: "gpt-4", // Using GPT-4 for deeper reasoning
+        model: "gpt-4",
         messages: [
           {
             role: "system",
@@ -118,7 +113,7 @@ app.post('/api/chat', async (req, res) => {
 });
 
 // Start server
-app.listen(PORT, '0.0.0.0', () => {
+app.listen(PORT, () => {
   console.log(`✅ Server running on port ${PORT}`);
   console.log(`🔑 OpenAI API configured: ${!!process.env.OPENAI_API_KEY ? 'Yes' : 'No'}`);
   console.log(`🔑 Google API configured: ${!!process.env.GOOGLE_API_KEY ? 'Yes' : 'No'}`);
