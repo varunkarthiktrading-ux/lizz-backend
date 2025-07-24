@@ -1,5 +1,5 @@
 {
-  "name": "lizz-ai-backend",
+  "name": "lizz-backend",
   "version": "1.0.0",
   "description": "Backend service for Lizz AI - Comprehensive AI Assistant",
   "main": "index.js",
