@@ -180,6 +180,12 @@ app.post('/api/chat', async (req, res) => {
   }
 });
 
+app.use(cors({
+  origin: 'https://varunkarthiktrading-ux.github.io', // Allow requests from your frontend
+  methods: ['GET', 'POST'],
+  credentials: true
+})); 
+
 // Start server
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`✅ Server running on port ${PORT}`);
