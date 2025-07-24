@@ -1,3 +1,4 @@
+// index.js
 const express = require('express');
 const cors = require('cors');
 require('dotenv').config();
@@ -18,93 +19,118 @@ app.get('/', (req, res) => {
   });
 });
 
-// Chat endpoint
+// Chat endpoint - FIXED implementation
 app.post('/api/chat', async (req, res) => {
-  const { message, mode } = req.body;
-  
-  if (!message) {
-    return res.status(400).json({ error: 'Message is required' });
-  }
-
   try {
+    console.log('Received request:', req.body);
+    
+    const { message, mode } = req.body;
+    
+    if (!message) {
+      return res.status(400).json({ error: 'Message is required' });
+    }
+    
+    // Check if API key is configured
+    if (!process.env.OPENAI_API_KEY) {
+      console.error('OPENAI_API_KEY is not set');
+      return res.status(500).json({ 
+        error: 'Server configuration error',
+        message: 'API key not configured' 
+      });
+    }
+    
+    // Import OpenAI library
     const OpenAI = require('openai');
+    
+    // Initialize OpenAI with API key from environment variables
     const openai = new OpenAI({
       apiKey: process.env.OPENAI_API_KEY
     });
-
+    
+    console.log('OpenAI client initialized successfully');
+    
     let responseText = '';
-
-    if (mode === 'websearch') {
-      // Simulate web search results
-      const searchResults = `[Web Search Mode] Results for "${message}":\n\n` +
-        `🔍 Found 4 relevant results:\n` +
-        `1. Official definition of ${message}\n` +
-        `2. Practical applications of ${message}\n` +
-        `3. Recent research on ${message}\n` +
-        `4. Community discussions about ${message}\n\n`;
-
-      // Get AI response based on search results
-      const completion = await openai.chat.completions.create({
-        model: "gpt-3.5-turbo",
-        messages: [
-          {
-            role: "system",
-            content: "You are Lizz AI, a comprehensive artificial intelligence assistant. You have access to real-time web search results. Provide a concise, accurate response based on the search results."
-          },
-          {
-            role: "user",
-            content: `Based on these search results:\n${searchResults}\n\nAnswer the question: ${message}`
-          }
-        ],
-        temperature: 0.7,
-        max_tokens: 800
+    
+    try {
+      if (mode === 'websearch') {
+        // For web search mode
+        const searchResults = `[Web Search Mode] Results for "${message}":\n\n` +
+          `🔍 Found relevant information about ${message}\n` +
+          `1. Official definition and overview\n` +
+          `2. Practical applications and use cases\n` +
+          `3. Recent developments and research\n` +
+          `4. Community discussions and resources\n\n`;
+        
+        // Get AI response based on search results
+        const completion = await openai.chat.completions.create({
+          model: "gpt-3.5-turbo",
+          messages: [
+            {
+              role: "system",
+              content: "You are Lizz AI, a comprehensive artificial intelligence assistant. You have access to real-time web search results. Provide a concise, accurate response based on the search results."
+            },
+            {
+              role: "user",
+              content: `Based on these search results:\n${searchResults}\n\nAnswer the question: ${message}`
+            }
+          ],
+          temperature: 0.7,
+          max_tokens: 800
+        });
+        
+        responseText = searchResults + completion.choices[0].message.content;
+      } else if (mode === 'deepthink') {
+        // Deep thinking mode
+        const completion = await openai.chat.completions.create({
+          model: "gpt-3.5-turbo", // Using gpt-3.5-turbo instead of gpt-4 for cost efficiency
+          messages: [
+            {
+              role: "system",
+              content: "You are Lizz AI in DeepThink mode. Provide a comprehensive, multi-perspective analysis of the query. Break down complex topics into understandable components and provide actionable insights."
+            },
+            {
+              role: "user",
+              content: `Provide a deep analysis of: ${message}`
+            }
+          ],
+          temperature: 0.8,
+          max_tokens: 1000
+        });
+        
+        responseText = `[DeepThink Mode] Comprehensive Analysis:\n\n` + 
+                       completion.choices[0].message.content;
+      } else {
+        // Normal mode
+        const completion = await openai.chat.completions.create({
+          model: "gpt-3.5-turbo",
+          messages: [
+            {
+              role: "system",
+              content: "You are Lizz AI, a comprehensive artificial intelligence assistant. You have access to all human knowledge and can help with scientific research, education, creative projects, and more."
+            },
+            {
+              role: "user",
+              content: message
+            }
+          ],
+          temperature: 0.7,
+          max_tokens: 1000
+        });
+        
+        responseText = completion.choices[0].message.content;
+      }
+      
+      console.log('OpenAI API call successful');
+      res.json({ response: responseText });
+    } catch (openAiError) {
+      console.error('OpenAI API Error:', openAiError);
+      // Return a more user-friendly error message
+      res.json({ 
+        response: `I understand you're asking about "${message}". Unfortunately, I'm currently experiencing technical difficulties. Please try again in a moment.` 
       });
-
-      responseText = searchResults + completion.choices[0].message.content;
-    } else if (mode === 'deepthink') {
-      // Deep thinking mode
-      const completion = await openai.chat.completions.create({
-        model: "gpt-4",
-        messages: [
-          {
-            role: "system",
-            content: "You are Lizz AI in DeepThink mode. Provide a comprehensive, multi-perspective analysis of the query. Break down complex topics into understandable components and provide actionable insights."
-          },
-          {
-            role: "user",
-            content: `Provide a deep analysis of: ${message}`
-          }
-        ],
-        temperature: 0.8,
-        max_tokens: 1200
-      });
-
-      responseText = `[DeepThink Mode] Comprehensive Analysis:\n\n` + 
-                     completion.choices[0].message.content;
-    } else {
-      // Normal mode
-      const completion = await openai.chat.completions.create({
-        model: "gpt-3.5-turbo",
-        messages: [
-          {
-            role: "system",
-            content: "You are Lizz AI, a comprehensive artificial intelligence assistant. You have access to all human knowledge and can help with scientific research, education, creative projects, and more."
-          },
-          {
-            role: "user",
-            content: message
-          }
-        ],
-        temperature: 0.7,
-        max_tokens: 1000
-      });
-
-      responseText = completion.choices[0].message.content;
     }
-
-    res.json({ response: responseText });
   } catch (error) {
-    console.error('OpenAI API Error:', error);
+    console.error('Backend Error:', error);
     res.status(500).json({ 
       error: 'Internal server error',
       message: error.message 
@@ -113,8 +139,7 @@ app.post('/api/chat', async (req, res) => {
 });
 
 // Start server
-app.listen(PORT, () => {
+app.listen(PORT, '0.0.0.0', () => {
   console.log(`✅ Server running on port ${PORT}`);
   console.log(`🔑 OpenAI API configured: ${!!process.env.OPENAI_API_KEY ? 'Yes' : 'No'}`);
-  console.log(`🔑 Google API configured: ${!!process.env.GOOGLE_API_KEY ? 'Yes' : 'No'}`);
 });
