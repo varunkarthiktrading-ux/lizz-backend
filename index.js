@@ -46,9 +46,9 @@ app.post('/api/chat', async (req, res) => {
     }
     
     // Initialize OpenAI client
-    const OpenAI = require('openai');
-    const openai = new OpenAI({
-      apiKey: process.env.OPENAI_API_KEY
+    const Deepseek = require('deepseek');
+    const deepseek = new Deepseek({
+      apiKey: process.env.DEEPSEEK_API_KEY
     });
     
     let responseText = '';
@@ -77,7 +77,7 @@ app.post('/api/chat', async (req, res) => {
           }
           
           // Get AI response based on search results
-          const completion = await openai.chat.completions.create({
+          const completion = await deepseek.chat.completions.create({
             model: "gpt-3.5-turbo",
             messages: [
               {
@@ -96,7 +96,7 @@ app.post('/api/chat', async (req, res) => {
           responseText = searchResults + "\n" + completion.choices[0].message.content;
         } else {
           // Fallback if search fails
-          const completion = await openai.chat.completions.create({
+          const completion = await deepseek.chat.completions.create({
             model: "gpt-3.5-turbo",
             messages: [
               {
@@ -114,7 +114,7 @@ app.post('/api/chat', async (req, res) => {
       } catch (searchError) {
         console.error('Search Error:', searchError);
         // Fallback to normal response
-        const completion = await openai.chat.completions.create({
+        const completion = await deepseek.chat.completions.create({
           model: "gpt-3.5-turbo",
           messages: [
             {
@@ -131,7 +131,7 @@ app.post('/api/chat', async (req, res) => {
       }
     } else if (mode === 'deepthink' && userIsActuallyPremium) {
       // Deep thinking mode (premium only)
-      const completion = await openai.chat.completions.create({
+      const completion = await deepseek.chat.completions.create({
         model: "gpt-3.5-turbo",
         messages: [
           {
@@ -151,7 +151,7 @@ app.post('/api/chat', async (req, res) => {
                      completion.choices[0].message.content;
     } else {
       // Normal mode (available to all users)
-      const completion = await openai.chat.completions.create({
+      const completion = await deepseek.chat.completions.create({
         model: "gpt-3.5-turbo",
         messages: [
           {
@@ -189,7 +189,7 @@ app.use(cors({
 // Start server
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`✅ Server running on port ${PORT}`);
-  console.log(`🔑 OpenAI API configured: ${!!process.env.OPENAI_API_KEY ? 'Yes' : 'No'}`);
+  console.log(`🔑 Deepseek API configured: ${!!process.env.DEEPSEEK_API_KEY ? 'Yes' : 'No'}`);
   console.log(`🔑 Google API configured: ${!!process.env.GOOGLE_API_KEY ? 'Yes' : 'No'}`);
   console.log(`🔑 Google search engine code configured: ${!!process.env.GOOGLE_SEARCH_ENGINE_ID ? 'Yes' : 'No'}`);
 });
