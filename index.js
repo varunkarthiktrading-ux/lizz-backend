@@ -191,5 +191,5 @@ app.listen(PORT, '0.0.0.0', () => {
   console.log(`✅ Server running on port ${PORT}`);
   console.log(`🔑 OpenAI API configured: ${!!process.env.OPENAI_API_KEY ? 'Yes' : 'No'}`);
   console.log(`🔑 Google API configured: ${!!process.env.GOOGLE_API_KEY ? 'Yes' : 'No'}`);
-  console.log(`🔑 Google search engine code configured: ${!!process.env. ? 'Yes' : 'No'}`);
+  console.log(`🔑 Google search engine code configured: ${!!process.env.GOOGLE_SEARCH_ENGINE_ID ? 'Yes' : 'No'}`);
 });
